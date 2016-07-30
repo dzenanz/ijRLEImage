@@ -152,7 +152,7 @@ but memory consumption has significantly reduces (Tab~\ref{tab:memoryConsumption
 \end{table}
 
 Scrolling through slices along different axes causes
-extraction of slices from the 3D image, called "`slicing"'.
+extraction of slices from the 3D image, called `slicing'.
 Slicing is the most frequently executed operation, and its performance is very important.
 To take full advantage of \code{itk::RLEImage},
 a slicing filter was specialized for it in ITK-SNAP.
@@ -189,7 +189,7 @@ is given in Tab.~\ref{tab:slicingPerformance}.
 These results show that slicing across the run-length lines is about
 twice slower than through uncompressed image.
 However, slicing along run-length lines is faster than the algorithm
-ITK-SNAP employed before, and not significantly slower than  \textit{pure ITK} RoI filter.
+ITK-SNAP employed before, and not significantly slower than  `pure ITK' RoI filter.
 Additionally, it is a few times faster than slicing through \doxygen{LabelMap}.
 
 
