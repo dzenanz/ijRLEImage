@@ -56,7 +56,10 @@ This document describes a new class, \code{itk::RLEImage},
 which uses run-length encoding to reduce the memory needed for storage of label maps.
 This class is accompanied by all the iterators
 to make it a drop-in replacement for \doxygen{Image}.
-This works quite well in most cases, however it is not possible if the user code
+By changing the image typedef to itk::RLEImage,
+many ITK image processing algorithms build without modification and
+with minimal performance overhead.
+However, it is not possible if the user code
 uses \code{GetBufferPointer()} or otherwise assumes a linear pixel layout.
 
 This class is implemented to reduce the memory use of ITK-SNAP \url{www.itksnap.org},
@@ -123,18 +126,19 @@ does only conversion between standard \doxygen{Image} and \code{itk::RLEImage}.
 If RegionOfInterest is smaller than LargestPossibleRegion,
 it really behaves as a classic region of interest filter.
 For RLEImage$\rightarrow$RLEImage case, the \doxygen{RegionOfInterestImageFilter}
-can behave as a caster for template types for repetition counter and pixel values.
+can behave as a caster for template types for repetition counter and pixel values,
+e.g. cast \code{itk::RLEImage<short,short>} into \code{itk::RLEImage<long,char>}.
 
 \section{ITK-SNAP Performance measurements}
 
 ITK-SNAP is a software application used to segment structures in 3D medical images.
-Authors' vision was to create a tool that would be dedicated to a specific function,
+The authors' vision was to create a tool that would be dedicated to a specific function,
 segmentation, and would be easy to use and learn.
 ITK-SNAP is free, open-source, and multi-platform.
 
 Since version 3.4, snap uses RLEImage for storing and editing segmentation layer.
 The interaction speed was not noticeable degraded,
-but memory consumption has significantly reduces (Tab~\ref{tab:memoryConsumption}).
+but memory consumption has significantly reduced (Tab~\ref{tab:memoryConsumption}).
 
 \begin{table}[h]
 	\centering
@@ -163,7 +167,7 @@ is given in Tab.~\ref{tab:slicingPerformance}.
 	\centering
 		\begin{tabular}{lrrrr}
 																																& \textbf{Image}           & \textbf{brainParc}          & \textbf{vb-seg}             & \textbf{wb-seg}              \\
-		\multirow{-2}{2cm}{Durations in milliseconds}                  & \textbf{Labels}          & \textbf{114}                & \textbf{9}                  & \textbf{58672}               \\
+		\multirow{-2}{*}{}                  												& \textbf{Labels}          & \textbf{114}                & \textbf{9}                  & \textbf{58672}               \\
 																																& X                        & 256                         & 640                         & 512                          \\
 																																& Y                        & 256                         & 633                         & 512                          \\
 		\multirow{-3}{*}{\textbf{Dimensions}}                        & Z                        & 256                         & 299                         & 1559                         \\
@@ -182,7 +186,7 @@ is given in Tab.~\ref{tab:slicingPerformance}.
 		\end{tabular}
 	\caption{Slicing performance of \texttt{LabelMap} using \texttt{ChangeRegionLabelMapFilter},
 	ITK-SNAP with \texttt{itk::RLEImage}, ITK-SNAP with \texttt{Image},
-	and \texttt{Image} using \texttt{RegionOfInterestImageFilter}.}
+	and \texttt{Image} using \texttt{RegionOfInterestImageFilter}. All durations are in milliseconds.}
 	\label{tab:slicingPerformance}
 \end{table}
 
@@ -192,6 +196,10 @@ However, slicing along run-length lines is faster than the algorithm
 ITK-SNAP employed before, and not significantly slower than  `pure ITK' RoI filter.
 Additionally, it is a few times faster than slicing through \doxygen{LabelMap}.
 
+\section{Acknowledgments}
+
+This work is supported by NIH grant R01 EB014346,
+`Continued development and maintenance of the ITK-SNAP 3D image segmentation software'.
 
 \bibliographystyle{plain}
 \bibliography{InsightJournal}
