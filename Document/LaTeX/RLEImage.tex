@@ -56,7 +56,7 @@ This document describes a new class, \code{itk::RLEImage},
 which uses run-length encoding to reduce the memory needed for storage of label maps.
 This class is accompanied by all the iterators
 to make it a drop-in replacement for \doxygen{Image}.
-By changing the image typedef to itk::RLEImage,
+By changing the image typedef to \code{itk::RLEImage},
 many ITK image processing algorithms build without modification and
 with minimal performance overhead.
 However, it is not possible if the user code
@@ -74,7 +74,7 @@ are all packaged as an ITK remote module \url{https://github.com/KitwareMedical/
 \tableofcontents
 
 
-Run-length encoding is used in many image compression applications\cite{wikiRLE}.
+Run-length encoding is used in many image compression applications~\cite{wikiRLE}.
 Images with groups of pixels with the same value are best suited for such compression,
 and label maps (Fig.~\ref{fig:opportunity}) are one such example.
 
@@ -93,7 +93,7 @@ wb-crop (its shoulder-to-hips cropped version).}
 \label{fig:opportunity}
 \end{figure}
 
-\doxygen{LabelMap}\cite{Lehmann2007} uses run-length encoding to store objects
+\doxygen{LabelMap}~\cite{Lehmann2007} uses run-length encoding to store objects
 as a collection of \textit{runs} and a background value.
 It is well suited for computing statistics on a static label map,
 i.e. label map which will not change during the program execution.
