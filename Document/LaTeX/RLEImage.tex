@@ -23,12 +23,13 @@ colorlinks,linkcolor={blue},citecolor={blue},urlcolor={blue},
 
 % Increment the release number whenever significant changes are made.
 % The author and/or editor can define 'significant' however they like.
-\release{0.01}
+\release{0.2}
 
-\author{D{\v z}enan Zuki{\' c}$^{1}$, Matthew McCormick$^{2}$ and Paul Yushkevich$^{3}$}
-\authoraddress{$^{1}$dzenan.zukic@kitware.com\\
-               $^{2}$matt.mccormick@kitware.com\\
-               $^{3}$pauly2@mail.med.upenn.edu}
+\author{D{\v z}enan Zuki{\' c}$^{1}$, Matthew McCormick$^{2}$, Guido Gerig$^{3}$ and Paul Yushkevich$^{4}$}
+\authoraddress{$^{1}$Kitware Inc., dzenan.zukic@kitware.com\\
+               $^{2}$Kitware Inc., matt.mccormick@kitware.com\\
+               $^{3}$Department of Computer Science and Engineering, NYU, gerig@nyu.edu\\
+               $^{4}$Penn Image Computing \& Science Laboratory, Department of Radiology, University of Pennsylvania, pauly2@mail.med.upenn.edu}
 
 \begin{document}
 \IJhandlefooter{\IJhandlerIDnumber}
@@ -62,7 +63,7 @@ with minimal performance overhead.
 However, it is not possible if the user code
 uses \code{GetBufferPointer()} or otherwise assumes a linear pixel layout.
 
-This class is implemented to reduce the memory use of ITK-SNAP \url{www.itksnap.org},
+This class is implemented to reduce the memory use of ITK-SNAP (\url{www.itksnap.org}),
 so ITK-SNAP is the base for measuring the quantitative results.
 
 The class, accompanying iterator specializations, automated regression tests, and test data
@@ -73,6 +74,8 @@ are all packaged as an ITK remote module \url{https://github.com/KitwareMedical/
 
 \tableofcontents
 
+
+\section{Introduction}
 
 Run-length encoding is used in many image compression applications~\cite{wikiRLE}.
 Images with groups of pixels with the same value are best suited for such compression,
@@ -117,8 +120,15 @@ typedef typename itk::Image< RLLine, VImageDimension - 1 > BufferType;
 typename BufferType::Pointer m_Buffer;
 \end{verbatim}
 
-All the standard iterators are specialized for \code{itk::RLEImage}:
-const/writable $\times$ withIndex/without explicit index $\times$ plain/region/scanline.
+This data structure is quite simple and very similar to uncompressed image.
+Once a pixel at a given index is changed, there is not much searching needed
+or complex data structure to maintain like in \doxygen{LabelMap}.
+This data structure is very convenient for slice extraction (slicing)
+across all axes except the first one: uncompressing a run-length line
+is about as fast as copying an already uncompressed row of pixels.
+
+Unlike \doxygen{LabelMap}, all the standard iterators are specialized for \code{itk::RLEImage}:
+const/\-writable $\times$ withIndex/\-without explicit index $\times$ plain/\-region/\-scanline.
 In addition to this, \doxygen{RegionOfInterestImageFilter} is specialized for
 Image$\rightarrow$RLEImage, RLEImage$\rightarrow$Image and RLEImage$\rightarrow$RLEImage cases.
 If the RegionOfInterest is set to LargestPossibleRegion, the class effectively
@@ -131,7 +141,7 @@ e.g. cast \code{itk::RLEImage<short,short>} into \code{itk::RLEImage<long,char>}
 
 \section{ITK-SNAP Performance measurements}
 
-ITK-SNAP is a software application used to segment structures in 3D medical images.
+ITK-SNAP~\cite{py06nimg} is a software application used to segment structures in 3D medical images.
 The authors' vision was to create a tool that would be dedicated to a specific function,
 segmentation, and would be easy to use and learn.
 ITK-SNAP is free, open-source, and multi-platform.
@@ -141,18 +151,19 @@ The interaction speed was not noticeable degraded,
 but memory consumption has significantly reduced (Tab~\ref{tab:memoryConsumption}).
 
 \begin{table}[h]
-	\centering
-		\begin{tabular}{llllll}
-		\textbf{Image} & \textbf{Version} & \textbf{Image Size (MVox)} & \textbf{Number of labels} & \textbf{Commit Size (MB)} & \textbf{Difference}            \\
-		None           & 3.x nightly      & 0                          & 0                         & 154                       & 100\%                          \\
-		vb-seg         & 3.x nightly      & 116                        & 9                         & 731                       & 100\%                          \\
-		wb-seg         & 3.x nightly      & 390                        & 58672                     & 3058                      & 100\%                          \\
-		None           & dev\_3.6         & 0                          & 0                         & 165                       & {\color{red} \textbf{+7\%}}    \\
-		vb-seg         & dev\_3.6         & 116                        & 9                         & 508                       & {\color{green} \textbf{-31\%}} \\
-		wb-seg         & dev\_3.6         & 390                        & 58672                     & 2267                      & {\color{green} \textbf{-26\%}}
-		\end{tabular}
-	\caption{Memory consumption before addition of RLEImage (3.x nightly) and after (dev\_3.6).}
-	\label{tab:memoryConsumption}
+    \centering
+    \begin{tabular}{lrrrrrrrr}
+                   & \multicolumn{3}{c}{\textbf{Image Size}} &                                              &                                           & \multicolumn{2}{c}{\textbf{Commit Size {[}MB{]}}} &                                \\
+    \textbf{Image} & X           & Y           & Z           & \multirow{-2}{12mm}{\textbf{Million voxels}} & \multirow{-2}{1 cm}{\textbf{Label count}} & Dense                    & RLE                    & \textbf{Difference}            \\
+    None           &             &             &             &                                              &                                           & 154                      & 165                    & {\color{red} \textbf{+7\%}}    \\
+    vb-seg         & 640         & 633         & 299         & 116                                          & 9                                         & 731                      & 508                    & {\color{green} \textbf{-31\%}} \\
+    wb-seg         & 512         & 512         & 1559        & 390                                          & 58672                                     & 3058                     & 2267                   & {\color{green} \textbf{-26\%}}
+    \end{tabular}
+    \caption{Memory consumption before addition of RLEImage (Dense) and after (RLE).
+    From the first row (without any image loaded) it is clear that
+    program itself takes more memory with version \textbf{3.4} than \textbf{3.2}.
+    This is influenced by many number of factors, not just addition of RLE compression.}
+    \label{tab:memoryConsumption}
 \end{table}
 
 Scrolling through slices along different axes causes
@@ -163,31 +174,33 @@ a slicing filter was specialized for it in ITK-SNAP.
 Comparison of slicing speed across the principal axes for different input images
 is given in Tab.~\ref{tab:slicingPerformance}.
 
-\begin{table}[h]
-	\centering
-		\begin{tabular}{lrrrr}
-																																& \textbf{Image}           & \textbf{brainParc}          & \textbf{vb-seg}             & \textbf{wb-seg}              \\
-		\multirow{-2}{*}{}                  												& \textbf{Labels}          & \textbf{114}                & \textbf{9}                  & \textbf{58672}               \\
-																																& X                        & 256                         & 640                         & 512                          \\
-																																& Y                        & 256                         & 633                         & 512                          \\
-		\multirow{-3}{*}{\textbf{Dimensions}}                        & Z                        & 256                         & 299                         & 1559                         \\
-																																& X                        & 51.0                        & 105.9                       & 993.6                        \\
-																																& Y                        & 39.2                        & 71.5                        & 912.1                        \\
-		\multirow{-3}{*}{\textbf{itk::LabelMap}}                     & Z                        & 39.0                        & 94.8                        & 874.7                        \\
-		{\color[HTML]{036400} }                                      & {\color[HTML]{036400} X} & {\color[HTML]{036400} 11.7} & {\color[HTML]{036400} 30.0} & {\color[HTML]{036400} 154.2} \\
-		{\color[HTML]{036400} }                                      & {\color[HTML]{036400} Y} & {\color[HTML]{036400} 1.1}  & {\color[HTML]{036400} 2.9}  & {\color[HTML]{036400} 15.4}  \\
-		\multirow{-3}{*}{{\color[HTML]{036400} \textbf{SNAP+RLE}}}   & {\color[HTML]{036400} Z} & {\color[HTML]{036400} 1.0}  & {\color[HTML]{036400} 5.6}  & {\color[HTML]{036400} 8.1}   \\
-		{\color[HTML]{9A0000} }                                      & {\color[HTML]{9A0000} X} & {\color[HTML]{9A0000} 5.2}  & {\color[HTML]{9A0000} 22.5} & {\color[HTML]{9A0000} 73.9}  \\
-		{\color[HTML]{9A0000} }                                      & {\color[HTML]{9A0000} Y} & {\color[HTML]{9A0000} 3.6}  & {\color[HTML]{9A0000} 10.4} & {\color[HTML]{9A0000} 43.4}  \\
-		\multirow{-3}{*}{{\color[HTML]{9A0000} \textbf{SNAP-noRLE}}} & {\color[HTML]{9A0000} Z} & {\color[HTML]{9A0000} 3.6}  & {\color[HTML]{9A0000} 21.8} & {\color[HTML]{9A0000} 14.1}  \\
-																																& X                        & 10.3                        & 26.3                        & 79.1                         \\
-																																& Y                        & 0.5                         & 0.6                         & 1.4                          \\
-		\multirow{-3}{*}{\textbf{pureITK}}                           & Z                        & 0.4                         & 0.7                         & 0.6                         
-		\end{tabular}
-	\caption{Slicing performance of \texttt{LabelMap} using \texttt{ChangeRegionLabelMapFilter},
-	ITK-SNAP with \texttt{itk::RLEImage}, ITK-SNAP with \texttt{Image},
-	and \texttt{Image} using \texttt{RegionOfInterestImageFilter}. All durations are in milliseconds.}
-	\label{tab:slicingPerformance}
+\begin{table}[ht]
+  \centering
+    \begin{tabular}{lrrrr}
+    \textbf{Image}                                               &                          & brainParc                   & vb-seg                      & wb-seg                       \\
+    Label count                                                  &                          & 114                         & 9                           & 58672                        \\
+                                                                 & X                        & 256                         & 640                         & 512                          \\
+                                                                 & Y                        & 256                         & 633                         & 512                          \\
+    \multirow{-3}{*}{\textbf{Dimensions}}                        & Z                        & 256                         & 299                         & 1559                         \\
+                                                                 &                          & \multicolumn{3}{c}{\textbf{Slice extraction duration [ms]}}                              \\
+                                                                 & X                        & 51.0                        & 105.9                       & 993.6                        \\
+                                                                 & Y                        & 39.2                        & 71.5                        & 912.1                        \\
+    \multirow{-3}{*}{\textbf{itk::LabelMap}}                     & Z                        & 39.0                        & 94.8                        & 874.7                        \\ \hline
+    {\color[HTML]{036400} }                                      & {\color[HTML]{036400} X} & {\color[HTML]{036400} 11.7} & {\color[HTML]{036400} 30.0} & {\color[HTML]{036400} 154.2} \\
+    {\color[HTML]{036400} }                                      & {\color[HTML]{036400} Y} & {\color[HTML]{036400} 1.1}  & {\color[HTML]{036400} 2.9}  & {\color[HTML]{036400} 15.4}  \\
+    \multirow{-3}{*}{{\color[HTML]{036400} \textbf{SNAP+RLE}}}   & {\color[HTML]{036400} Z} & {\color[HTML]{036400} 1.0}  & {\color[HTML]{036400} 5.6}  & {\color[HTML]{036400} 8.1}   \\ \hline
+    {\color[HTML]{9A0000} }                                      & {\color[HTML]{9A0000} X} & {\color[HTML]{9A0000} 5.2}  & {\color[HTML]{9A0000} 22.5} & {\color[HTML]{9A0000} 73.9}  \\
+    {\color[HTML]{9A0000} }                                      & {\color[HTML]{9A0000} Y} & {\color[HTML]{9A0000} 3.6}  & {\color[HTML]{9A0000} 10.4} & {\color[HTML]{9A0000} 43.4}  \\
+    \multirow{-3}{*}{{\color[HTML]{9A0000} \textbf{SNAP-noRLE}}} & {\color[HTML]{9A0000} Z} & {\color[HTML]{9A0000} 3.6}  & {\color[HTML]{9A0000} 21.8} & {\color[HTML]{9A0000} 14.1}  \\ \hline
+                                                                 & X                        & 10.3                        & 26.3                        & 79.1                         \\
+                                                                 & Y                        & 0.5                         & 0.6                         & 1.4                          \\
+    \multirow{-3}{*}{\textbf{pureITK}}                           & Z                        & 0.4                         & 0.7                         & 0.6
+    \end{tabular}
+  \caption{Slicing performance of \texttt{LabelMap} using \texttt{ChangeRegionLabelMapFilter},
+  ITK-SNAP with \texttt{itk::RLEImage}, ITK-SNAP with \texttt{Image},
+  and \texttt{Image} using \texttt{RegionOfInterestImageFilter}. All durations are in milliseconds.
+  {\color[HTML]{9A0000} \textbf{SNAP-noRLE}} was single-threaded, all the others used 4 processor cores.}
+  \label{tab:slicingPerformance}
 \end{table}
 
 These results show that slicing across the run-length lines is about
