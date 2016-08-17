@@ -28,7 +28,7 @@ colorlinks,linkcolor={blue},citecolor={blue},urlcolor={blue},
 \author{D{\v z}enan Zuki{\' c}$^{1}$, Matthew McCormick$^{2}$, Guido Gerig$^{3}$ and Paul Yushkevich$^{4}$}
 \authoraddress{$^{1}$Kitware Inc., dzenan.zukic@kitware.com\\
                $^{2}$Kitware Inc., matt.mccormick@kitware.com\\
-               $^{3}$Department of Computer Science and Engineering, NYU, gerig@nyu.edu\\
+               $^{3}$NYU Tandon School of Engineering, Department of Computer Science and Engineering, gerig@nyu.edu\\
                $^{4}$Penn Image Computing \& Science Laboratory, Department of Radiology, University of Pennsylvania, pauly2@mail.med.upenn.edu}
 
 \begin{document}
@@ -96,14 +96,15 @@ wb-crop (its shoulder-to-hips cropped version).}
 \label{fig:opportunity}
 \end{figure}
 
-\doxygen{LabelMap}~\cite{Lehmann2007} uses run-length encoding to store objects
-as a collection of \textit{runs} and a background value.
-It is well suited for computing statistics on a static label map,
-i.e. label map which will not change during the program execution.
-
-\code{itk::RLEImage} uses a simpler data structure, which makes it more suited
-for on-the-fly editing.
-Thus \code{itk::RLEImage} and \doxygen{LabelMap} have quite different goals.
+Although \doxygen{LabelMap}~\cite{Lehmann2007} is well suited for
+computing statistics on a static label map
+(label map which will not change during the program execution),
+it uses a data structure which is not very suitable for either
+slice extraction (slicing) or pixel modification (editing).
+We therefore propose the new \code{itk::RLEImage} which addresses
+this issue by using a simpler data structure.
+That makes it not just more suited for on-the-fly editing,
+but also significantly faster for slicing (Tab.~\ref{tab:slicingPerformance}).
 
 
 \section{Data structure}
